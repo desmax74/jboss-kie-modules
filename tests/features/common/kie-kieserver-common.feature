@@ -485,3 +485,31 @@ Feature: Kie Server common features
       | KIE_SERVER_MAX_METASPACE_SIZE  | 4096    |
       | GC_MAX_METASPACE_SIZE          | 2048    |
     Then container log should contain -XX:MaxMetaspaceSize=4096m
+  @wip
+  Scenario: Check if the Kafka integration is enabled
+    When container is started with env
+      | variable                               | value                         |
+      | KIE_SERVER_KAFKA_EXT_ENABLED           | true                          |
+      | KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS | localhost:9092                |
+      | KIE_SERVER_KAFKA_EXT_CLIENT_ID         | app                           |
+      | KIE_SERVER_KAFKA_EXT_GROUP_ID          | jbpm-consumer                 |
+      | KIE_SERVER_KAFKA_EXT_ACKS              | 2                             |
+      | KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS      | 2000                          |
+      | KIE_SERVER_KAFKA_EXT_AUTOCREATE_TOPICS | true                          |
+      | KIE_SERVER_KAFKA_EXT_TOPICS            | {person=human} {dog=animal}   |
+     Then container log should contain -Dorg.kie.server.jbpm-kafka.ext.disabled=false
+      And container log should contain -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=localhost:9092
+      And container log should contain -Dorg.kie.server.jbpm-kafka.ext.client.id=app
+      And container log should contain -Dorg.kie.server.jbpm-kafka.ext.group.id=jbpm-consumer
+      And container log should contain -Dorg.kie.server.jbpm-kafka.ext.acks=2
+      And container log should contain -Dorg.kie.server.jbpm-kafka.ext.max.block.ms=2000
+      And container log should contain -Dorg.kie.server.jbpm-kafka.ext.allow.auto.create.topics=true
+      And container log should contain -Dorg.kie.server.jbpm-kafka.ext.topics.person=human
+      And container log should contain -Dorg.kie.server.jbpm-kafka.ext.topics.dog=animal
+
+    @wip
+  Scenario: Check if the Kafka integration is disabled
+    When container is started with env
+      | variable                       | value   |
+      | KIE_SERVER_KAFKA_EXT_ENABLED   | false    |
+    Then container log should contain -Dorg.kie.server.jbpm-kafka.ext.disabled=true

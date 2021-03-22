@@ -67,6 +67,7 @@ function configure() {
     configure_server_sync_deploy
     configure_drools
     configure_jbpm
+    configure_kafka
     configure_kie_server_mgmt
     configure_mode
     configure_metaspace
@@ -716,3 +717,26 @@ function configure_server_state() {
 function generate_random_id() {
     cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1
 }
+
+function configure_kafka(){
+  if [ "${KIE_KAFKA_EXT_ENABLED^^}" = "true" ]; then
+    log_info "Kafka Extension enabled"
+    JBOSS_KIE_ARGS= "${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.disabled=false"
+    JBOSS_KIE_ARGS= "${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.bootstrap.servers=${KIE_SERVER_KAFKA_EXT_BOOTSTRAP_SERVERS}"
+    JBOSS_KIE_ARGS= "${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.client.id=${KIE_SERVER_KAFKA_EXT_CLIENT_ID}"
+    JBOSS_KIE_ARGS= "${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.group.id=${KIE_SERVER_KAFKA_EXT_GROUP_ID}"
+    JBOSS_KIE_ARGS= "${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.acks=${KIE_SERVER_KAFKA_EXT_ACKS}"
+    JBOSS_KIE_ARGS= "${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.max.block.ms=${KIE_SERVER_KAFKA_EXT_MAX_BLOCK_MS}"
+    JBOSS_KIE_ARGS= "${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.allow.auto.create.topics=${KIE_SERVER_KAFKA_EXT_TOPICS}"
+
+    IFS=',' read -a ks_topics <<< $KIE_SERVER_KAFKA_EXT_TOPICS
+    for topic in "${ks_topics[@]}"; do
+      JBOSS_KIE_ARGS= "${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.topics.${topic}"
+    done
+
+  else
+    log_info "Kafka Extension disabled"
+    JBOSS_KIE_ARGS= "${JBOSS_KIE_ARGS} -Dorg.kie.server.jbpm-kafka.ext.disabled=true"
+  fi
+}
+
