@@ -735,6 +735,9 @@ function generate_random_id() {
 function configure_jbpm_cluster(){
     if [ "${KIE_SERVER_JBPM_CLUSTER^^}" = "TRUE" ]; then
       configure_jbpm_cache
+       if [ -f "/opt/kie-server-services-jbpm-cluster-7.x.Final.jar" ]; then
+          mv /opt/kie-server-services-jbpm-cluster-7.x.Final.jar "/opt/eap/standalone/deployments/ROOT.war/WEB-INF/lib"
+      fi
       log_info "KIE Server's cluster for Jbpm failover is enabled."
     else
       log_info "KIE Server's cluster for Jbpm failover is disabled."
